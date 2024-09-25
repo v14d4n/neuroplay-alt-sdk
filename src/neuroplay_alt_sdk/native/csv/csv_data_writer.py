@@ -2,7 +2,7 @@ import csv
 import logging
 from typing import Iterable
 
-from . import AbstractCSVWriter
+from .abstract_csv_writer import AbstractCSVWriter
 
 logger = logging.getLogger(__name__)
 

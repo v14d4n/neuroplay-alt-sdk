@@ -7,8 +7,7 @@ from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 
 from ..enums import NeuroPlayDevicesEnum
-
-from ..devices import AbstractNeuroPlayDevice
+from ..devices import AbstractNeuroPlayDevice, NeuroPlayDevice
 
 logger = logging.getLogger(__name__)
 

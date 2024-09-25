@@ -4,7 +4,7 @@ from typing import List, Sequence, Dict
 import numpy as np
 from bleak import BLEDevice
 
-from . import AbstractNeuroPlayDevice
+from .abstract_neuroplay_device import AbstractNeuroPlayDevice
 from ..edf import EDFCreator
 from ..enums import DataStatusEnum
 from ..filters import ContinuousFilter, ContinuousNotchFilter, FiltersContainer

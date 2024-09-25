@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from . import AbstractCSVWriter
+from .abstract_csv_writer import AbstractCSVWriter
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 from typing import List
 
-from . import AbstractFilter
+from .abstract_filter import AbstractFilter
 
 
 class FiltersContainer(AbstractFilter):

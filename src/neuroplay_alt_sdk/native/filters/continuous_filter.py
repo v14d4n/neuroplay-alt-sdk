@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import butter, lfilter
 
-from . import AbstractFilter
+from .abstract_filter import AbstractFilter
 
 
 class ContinuousFilter(AbstractFilter):

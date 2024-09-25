@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import lfilter, iirnotch
 
-from . import AbstractFilter
+from .abstract_filter import AbstractFilter
 
 
 class ContinuousNotchFilter(AbstractFilter):
