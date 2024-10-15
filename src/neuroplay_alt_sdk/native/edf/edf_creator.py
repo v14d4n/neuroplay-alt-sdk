@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -6,7 +7,7 @@ import pandas as pd
 
 import pyedflib
 from pyedflib import EdfWriter
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from ..csv import CSVAnnotationsWriter, CSVDataWriter, CSVUtil
 
@@ -27,6 +28,8 @@ class EDFCreator:
 
         self.__is_recording = False
         self.__start_time: Optional[float] = None
+        self.__on_stop_recording_callables: list[Callable[[], Any]] = []
+        self.__on_start_recording_callables: list[Callable[[], Any]] = []
 
     def start_recording(self, output_edf_path: Path) -> None:
         """
@@ -36,6 +39,9 @@ class EDFCreator:
         """
         if self.__is_recording:
             raise RuntimeError('Recording is already started.')
+
+        for call in self.__on_start_recording_callables:
+            call()
 
         self.__is_recording = True
 
@@ -54,6 +60,9 @@ class EDFCreator:
         """
         if not self.__is_recording:
             raise RuntimeError('Recording is not started.')
+
+        for call in self.__on_stop_recording_callables:
+            call()
 
         if self.__buffer:
             self.__csv_data_writer.append_rows(self.__buffer)
@@ -164,3 +173,11 @@ class EDFCreator:
     @property
     def csv_annotations_writer(self) -> CSVAnnotationsWriter:
         return self.__csv_annotations_writer
+
+    @property
+    def on_stop_recording_callables(self) -> list[Callable[[], Any]]:
+        return self.__on_stop_recording_callables
+
+    @property
+    def on_start_recording_callables(self) -> list[Callable[[], Any]]:
+        return self.__on_start_recording_callables

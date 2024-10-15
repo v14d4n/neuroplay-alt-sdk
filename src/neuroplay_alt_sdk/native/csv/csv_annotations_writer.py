@@ -41,10 +41,10 @@ class CSVAnnotationsWriter(AbstractCSVWriter):
         :raises RuntimeError: If recording is not started.
         :return None:
         """
-        if self.__is_recording:
-            with self.__csv_file_path.open('a', newline='', encoding='utf-8') as csv_file:
+        if self._is_recording:
+            with self._csv_file_path.open('a', newline='', encoding='utf-8') as csv_file:
                 writer = csv.writer(csv_file)
                 writer.writerow([time.time() - self.__start_time, text])
-            logger.debug(f'Appended data to csv file (path: {self.__csv_file_path})')
+            logger.debug(f'Appended data to csv file (path: {self._csv_file_path})')
         else:
             raise RuntimeError('Recording is not started.')
