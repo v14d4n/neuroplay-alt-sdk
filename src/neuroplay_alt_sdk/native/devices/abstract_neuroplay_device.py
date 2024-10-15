@@ -18,6 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractNeuroPlayDevice(ABC):
+    __BLUETOOTH_UUID_EEG: str = "f0001298-0451-4000-b000-000000000000"
+    __BLUETOOTH_UUID_EEG_DATA: str = "f0001299-0451-4000-b000-000000000000"
+    __BLUETOOTH_UUID_EEG_CONTROL: str = "f000129a-0451-4000-b000-000000000000"
+
+    __MAGIC_MICROVOLTS_BIT = 0.000186265
+    __QUEUE_SIZE = 4
+    __PACKET_SIZE = 20
+
     def __init__(self, ble_device: BLEDevice):
         """
         :raises NeuroPlayExceptionNotValidDevice:
@@ -26,19 +34,13 @@ class AbstractNeuroPlayDevice(ABC):
         self.__address: str = ble_device.address
         self.__device_client = BleakClient(ble_device, winrt=dict(use_cached_services=False))
 
-        self.__BLUETOOTH_UUID_EEG: str = "f0001298-0451-4000-b000-000000000000"
-        self.__BLUETOOTH_UUID_EEG_DATA: str = "f0001299-0451-4000-b000-000000000000"
-        self.__BLUETOOTH_UUID_EEG_CONTROL: str = "f000129a-0451-4000-b000-000000000000"
-
-        self.__MAGIC_MICROVOLTS_BIT = 0.000186265
-        self.__QUEUE_SIZE = 4
-        self.__PACKET_SIZE = 20
-
         self.__data_service: Optional[BleakGATTService] = None
         self.__data_read_characteristic: Optional[BleakGATTCharacteristic] = None
         self.__data_control_characteristic: Optional[BleakGATTCharacteristic] = None
 
-        self.__SAMPLING_RATE: int = 125
+        # TODO: Добавить возможность меня количество каналов
+        self.__sampling_rate: int = 125
+
         self.__packets_list: List[bytes] = []
         self.__is_connected: bool = False
 
@@ -239,7 +241,7 @@ class AbstractNeuroPlayDevice(ABC):
 
     @property
     def sampling_rate(self) -> int:
-        return self.__SAMPLING_RATE
+        return self.__sampling_rate
 
     def __str__(self):
         return f'{self.__full_name} ({self.__address})'

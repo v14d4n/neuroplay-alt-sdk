@@ -75,8 +75,12 @@ class NeuroPlayScanner(AsyncGenerator[T, None]):
 
     async def discover_next(self, timeout: Optional[int] = None) -> T:
         """
-        :param timeout: Timeout for discovering the next device. If None, uses self.__timeout.
-        :raises asyncio.TimeoutError:
+        This method is used to discover the next valid BLE device. It first sets the timeout value to the provided argument or
+        the default timeout value if no argument is provided. Then, it enters a loop that continues until a valid device
+        is found or a timeout error occurs.
+
+        :param timeout: Optional timeout value in seconds. If not provided, the default timeout value is used.
+        :return: An instance of the device class for the first valid device found.
         """
         timeout = timeout or self.__timeout
 

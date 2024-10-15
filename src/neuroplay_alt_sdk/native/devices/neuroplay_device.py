@@ -8,6 +8,7 @@ from .abstract_neuroplay_device import AbstractNeuroPlayDevice
 from ..edf import EDFCreator
 from ..enums import DataStatusEnum
 from ..filters import ContinuousFilter, ContinuousNotchFilter, FiltersContainer
+from ..utils import DataSynchronizer
 
 
 class NeuroPlayDevice(AbstractNeuroPlayDevice):
@@ -30,6 +31,9 @@ class NeuroPlayDevice(AbstractNeuroPlayDevice):
             channel: DataStatusEnum.NOT_VALID for channel in self.channels_names
         }
 
+        self.__data_synchronizer = DataSynchronizer(self.sampling_rate)
+        self.__edf_creator.on_start_recording_callables.append(self.__data_synchronizer.reset)
+
     async def filter_sample_data(self, data: List[float]) -> Sequence[float]:
         filtered_data = []
         for f, data in zip(self.__channels_filters, data):
@@ -41,7 +45,8 @@ class NeuroPlayDevice(AbstractNeuroPlayDevice):
 
     async def filtered_channels_data_handler(self, data: Sequence[float]) -> None:
         if self.__edf_creator.is_recording:
-            self.__edf_creator.write_data(np.array(data))
+            for timed_data in self.__data_synchronizer.synchronize_data(data):
+                self.__edf_creator.write_data(np.array(timed_data))
 
         if self.__accumulating_event.is_set():
             self.__valid_buffer.append(data)
@@ -49,7 +54,7 @@ class NeuroPlayDevice(AbstractNeuroPlayDevice):
                 await self.__complete_accumulation()
 
     async def on_disconnected(self) -> None:
-        pass
+        self.__data_synchronizer.reset()
 
     async def validate_channels(self) -> Dict[str, DataStatusEnum]:
         """
