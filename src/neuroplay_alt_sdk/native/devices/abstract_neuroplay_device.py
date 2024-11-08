@@ -4,7 +4,6 @@ import re
 from abc import ABC, abstractmethod
 from typing import Optional, List, Sequence, assert_never
 
-import bleak.exc
 import numpy as np
 from bleak import BleakClient, BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
@@ -140,7 +139,7 @@ class AbstractNeuroPlayDevice(ABC):
         :return bool:
         """
 
-        if self.__is_connected:
+        if self.is_connected:
             raise RuntimeError('Device is already connected')
 
         try:
@@ -174,12 +173,10 @@ class AbstractNeuroPlayDevice(ABC):
             # Включаем прием нотификаций от сервиса BLUETOOTH_UUID_EEG_DATA.
             await self.__device_client.start_notify(self.__BLUETOOTH_UUID_EEG_DATA, self.packet_handler)
 
-            self.__is_connected = True
             logger.info(f"Connected to {self.__full_name}")
             return True
         finally:
             if not (self.__data_service or self.__data_read_characteristic or self.__data_control_characteristic):
-                self.__device_client = None
                 self.__data_service = None
                 self.__data_control_characteristic = None
                 self.__data_read_characteristic = None
@@ -190,30 +187,30 @@ class AbstractNeuroPlayDevice(ABC):
         :raises RuntimeError: Raised when device is not connected.
         :return None:
         """
-        if not self.__is_connected:
+        if not self.is_connected:
             raise RuntimeError('Device is not connected')
 
         logger.info(f"Disconnecting from {self.__full_name}")
 
         try:
             # Останавливаем передачу данных передавая [0x00, 0x00] на сервис BLUETOOTH_UUID_EEG_DATA
-            await self.__device_client.write_gatt_char(self.__BLUETOOTH_UUID_EEG_DATA, bytearray(b'\x00\x00'))
+            # await self.__device_client.write_gatt_char(self.__BLUETOOTH_UUID_EEG_DATA, bytearray(b'\x00\x00'))
 
             # Останавливаем нотификацию
-            await self.__device_client.stop_notify(self.__BLUETOOTH_UUID_EEG_DATA)
-        except bleak.exc.BleakError as e:
+            # await self.__device_client.stop_notify(self.__BLUETOOTH_UUID_EEG_DATA)
+
+            await self.__device_client.disconnect()
+        except Exception as e:
             logger.warning(str(e))
             # raise e
         finally:
-            await self.__device_client.disconnect()
-            self.__is_connected = False
             await self.on_disconnected()
 
         logger.info(f"Disconnected from {self.__full_name}")
 
     @property
     def is_connected(self) -> bool:
-        return self.__is_connected
+        return self.__device_client.is_connected
 
     @property
     def id(self) -> int:
