@@ -1,74 +1,97 @@
-# Пример использования
-Для начала необходимо найти устройство.
+# NeuroPlay Alt SDK
 
-```python
-device: NeuroPlayDevice = await NeuroPlayScanner.search_for(
-    device_type=NeuroPlayDevicesEnum.NEUROPLAY_6C,
-    device_id=1232,
-)
-```
-По стандарту из метода ```search_for``` класса ```NeuroPlayScanner``` возвращается ```NeuroPlayDevice``` (для подсказок по коду
-необходимо явно указать тип), он хранит в себе адрес устройства 
-в сети, поэтому подключение не обязательно выполнять сразу после нахождения устройства. Подключаемся как только готовы.
-```python
-await device.connect()
-```
-Желательно подождать несколько секунд после подключения, чтобы фильтры настроились. Чтобы проверить валидные ли
-данные можно вызвать метод ```validate_channels``` объекта ```NeuroPlayDevice```, который возвращает
-```Dict[str, DataStatusEnum]```.
-```python
-print(await device.validate_channels())
-# {'O1': 'VALID', 'T3': 'WARN', 'Fp1': 'NOT_VALID', 'Fp2': 'VALID', 'T4': 'VALID', 'O2': 'VALID'}
-```
-После чего можем начинать запись.
-```python
-user = 'SomeNameHere'
-path_to_edf = Path().cwd().joinpath('results').joinpath(user).joinpath(f'data.edf')
-device.edf_creator.start_recording(path_to_edf)
-```
-Если во время записи необходимо поставить аннотацию вызываем метод ```write_annotation```.
+NeuroPlay Alt SDK is an asynchronous Python library for working with NeuroPlay EEG devices (6C, 8Cap). It allows you to search for devices via Bluetooth, connect to them, validate channel quality and record data in EDF or CSV format.
 
-```python
-device.edf_creator.write_annotation('some text')
-```
-Как только больше нет необходимости записывать данные, запись можно остановить.
-```python
-device.edf_creator.stop_recording()
-```
-После сохранения записи, если больше не планируется записывать новые данные, устройство можно отключать.
-```python
-await device.disconnect()
+## Maintenance
+
+This project is no longer actively maintained by the original author. However, it remains open source and open for community contributions via pull requests. Feel free to submit improvements or fixes.
+
+## Important Notes
+
+The SDK collects data from all available channels at a fixed sampling rate of 125 Hz. Selective channel reading is not supported. If you want to improve this functionality, you can modify [AbstractNeuroPlayDevice](src/neuroplay_alt_sdk/native/devices/abstract_neuroplay_device.py) class in the library source code. Contributions are welcome :)
+
+## Building from source (with Poetry)
+To build the package from source:
+
+```bash
+git clone https://github.com/v14d4n/NeuroPlayAltSDK.git
+cd NeuroPlayAltSDK
+poetry build
 ```
 
-# Основные классы
-Библиотека содержит в себе следующие основные классы: ```NeuroPlayDevicesEnum```, ```NeuroPlayScanner```, 
-```NeuroPlayDevice```, ```AbstractNeuroPlayDevice```, ```EDFCreator```, ```CSVManipulator```, ```FilterContainer```.
+This will generate `.whl `and `.tar.gz` files in the `dist/` directory:
 
-## NeuroPlayDevicesEnum
-Enum для девайсов.
-```python
-class NeuroPlayDevicesEnum(Enum):
-    ALL = "NeuroPlay"
-    NEUROPLAY_6C = "NeuroPlay-6C"
-    NEUROPLAY_8CAP = "NeuroPlay-8Cap"
-    __UNDEFINED = ""
-
-    @classmethod
-    def from_string(cls, device_name: str) -> 'NeuroPlayDevicesEnum':
-        for device in NeuroPlayDevicesEnum:
-            if device.value == device_name:
-                return device
-        return cls.__UNDEFINED
+```
+dist/
+├── neuroplay_alt_sdk-x.y.z.tar.gz
+└── neuroplay_alt_sdk-x.y.z-py3-none-any.whl
 ```
 
-Его метод ```from_string``` принимает строку и сравнивает её со всеми своими значениями.
-Если строка не совпала, возвращает ```NeuroPlayDevicesEnum.UNDEFINED```. При совпадении возвращает найденный элемент.
-Так ```NeuroPlayDevicesEnum.from_string('NeuroPlay-6C')``` вернет ```NeuroPlayDevicesEnum.NEUROPLAY_6C```.
+## Installation
 
-## NeuroPlayScanner
-Используется для поиска устройств в BT сети.
-### Основное использование
-Вернуть первый найденный ```NeuroPlayDevice``` по заданным параметрам.
+Install from PyPI:
+
+```bash
+pip install neuroplay-alt-sdk
+```
+
+The library requires Python 3.12 and uses [Bleak](https://github.com/hbldh/bleak) for Bluetooth communication.
+
+## Quick start
+
+```python
+import asyncio
+from pathlib import Path
+
+from neuroplay_alt_sdk.native.devices import NeuroPlayDevice
+from neuroplay_alt_sdk.native.enums import NeuroPlayDevicesEnum
+from neuroplay_alt_sdk.native.scanner import NeuroPlayScanner
+
+async def main():
+    # Search for a specific device
+    device: NeuroPlayDevice = await NeuroPlayScanner.search_for(
+        device_type=NeuroPlayDevicesEnum.NEUROPLAY_6C,
+        device_id=1232,
+    )
+
+    await device.connect()
+
+    # Check that data from channels is valid
+    print(await device.validate_channels())
+
+    # Start recording EEG
+    # This will create three files: data.edf, data.csv, annotations.csv
+    path_to_edf = Path("./results/data.edf")
+    device.edf_creator.start_recording(path_to_edf)
+
+    # Add annotations during recording if needed
+    device.edf_creator.write_annotation("some text")
+
+    # Stop recording when done
+    device.edf_creator.stop_recording()
+
+    await device.disconnect()
+
+asyncio.run(main())
+```
+
+## Core classes
+
+The package exposes several main classes:
+
+- `AbstractNeuroPlayDevice` – abstract class that implements all low-level functionality for devices. 
+- `NeuroPlayDevicesEnum` – enumeration of available device models.
+- `NeuroPlayScanner` – asynchronous scanner for discovering devices via Bluetooth.
+- `NeuroPlayDevice` – high level API for a single NeuroPlay device.
+- `EDFCreator` – helper class used by `NeuroPlayDevice` to save data.
+
+### NeuroPlayDevicesEnum
+Use `from_string` to convert a device name to the corresponding enum value. Unknown names return `NeuroPlayDevicesEnum.__UNDEFINED`.
+
+### NeuroPlayScanner
+
+`NeuroPlayScanner` is used to search for devices in the Bluetooth network.
+
 ```python
 device = await NeuroPlayScanner.search_for(
     device_class=NeuroPlayDevice,
@@ -78,7 +101,7 @@ device = await NeuroPlayScanner.search_for(
 )
 ```
 
-Проитерироваться по всем найденным ```NeuroPlayDevice```.
+Iterating over all discovered devices:
 
 ```python
 devices_set = {
@@ -92,55 +115,44 @@ async with NeuroPlayScanner(timeout=20,
     async for device in scanner:
         print(device)
 ```
-Можно изменить класс девайса на свой, в таком случае сканер будет возвращать девайсы указанного класса. В своем классе
-необходимо наследоваться от ```AbstractNeuroPlayDevice```. В примере свой класс назван ```MyCoolNeuroPlayDevice```.
+
+You can provide your own device class (subclassing `AbstractNeuroPlayDevice`).
+
 ```python
+class MyCoolNeuroPlayDevice(NeuroPlayDevice):
+    ...
+
 device = await NeuroPlayScanner.search_for(
     device_class=MyCoolNeuroPlayDevice,
     device_type=NeuroPlayDevicesEnum.NEUROPLAY_6C,
     device_id=1232,
 )
 ```
-```python
-async with NeuroPlayScanner(device_class=MyCoolNeuroPlayDevice) as scanner:
-    async for device in scanner:
-        print(device)
-```
 
-### Ручное управление сканером
-
-Метод ```discover_next``` вызовет ошибку ```asyncio.TimeoutError```, если не найдет новое
-устройство по истечению таймаута. Если передать ему ```timeout```, то он будет использовать его вместо
-указанного при инициализации класса.
-
-Важно отметить, что scanner хранит в себя все найденные девайсы, по этой причине их надо очищать, если есть
-необходимость повторного использования сканера.
+Manual control of the scanner is also available:
 
 ```python
 scanner = NeuroPlayScanner(
     device_class=NeuroPlayDevice,
-    timeout=15, 
     devices_names={NeuroPlayDevicesEnum.ALL}
 )
 
 await scanner.start()
 
-devices = []
 try:
     while True:
-        devices.append(scanner.discover_next(timeout=5))
+        device = await scanner.discover_next(timeout=5)
+        print(device)
 except asyncio.TimeoutError:
     pass
-devices = scanner.discovered_devices
-scanner.clear_discovered_devices()
 
 await scanner.stop()
 ```
 
-## NeuroPlayDevice
-Позволяет управлять устройством. Является наследником ```AbstractNeuroPlayDevice```. 
-### Основное использование
-Следующий код демонстрирует получение данных с устройства на протяжении 10 секунд.
+### NeuroPlayDevice
+
+`NeuroPlayDevice` is ready-to-use subclass of `AbstractNeuroPlayDevice` that lets you interact with a NeuroPlay device. You can also write your own subclass if needed. The device is an asynchronous context manager, so you can use it in an `async with` block or call `connect`/`disconnect` manually.
+
 ```python
 device: NeuroPlayDevice = await NeuroPlayScanner.search_for(
     device_type=NeuroPlayDevicesEnum.NEUROPLAY_6C,
@@ -152,42 +164,41 @@ if device:
     async with device:
         await asyncio.sleep(10)
 ```
-Альтернативно это можно сделать следующим образом. Метод ```connect``` выполняет подключение к устройству и пока оно
-подключено, объект принимает в свои методы обработчики (```raw_channels_data_handler``` и ```filtered_channels_data_handler```) 
-данные с устройства.
+
+Or explicitly:
+
 ```python
 await device.connect()
-
 await asyncio.sleep(10)
-
 await device.disconnect()
 ```
-Информация из обработчиков используется для создания EDF файла.
-Метод ```start_recording``` свойства ```edf_creator``` начинает запись CSV файла ```data.csv``` в указанной директории
-для EDF файла. По остановке записи, с помощью метода ```stop_recording```, из данных записанных в CSV файл
-будет создан EDF файл.
+
+The device provides filtered data to `EDFCreator` which writes CSV files and then converts them to EDF when recording stops.
+
 ```python
-path_to_edf = Path('.').joinpath('data.edf')
+path_to_edf = Path('data.edf')
 async with device:
     device.edf_creator.start_recording(path_to_edf)
     await asyncio.sleep(10)
     device.edf_creator.stop_recording()
 ```
-Если нет необходимости преобразовывать CSV файл с данными ЭЭГ в EDF по завершению записи, то можно напрямую использовать свойство
-```csv_data_writer``` и его методы ```start_writing``` и ```stop_writing```.
+
+If you only need a CSV file you can use the `csv_data_writer` directly:
 
 ```python
-path_to_csv = Path('.').joinpath('data.csv')
+path_to_csv = Path('data.csv')
 async with device:
     device.edf_creator.csv_data_writer.start_writing(path_to_csv)
     await asyncio.sleep(10)
     device.edf_creator.csv_data_writer.stop_writing()
 ```
-После чего с помощью статического метода ```save_csv_as_edf``` класса ```EDFCreator``` можно создать EDF файл из CSV.
-Частота дискретизации для 4/6/8 каналов составляет 125 гц.
+
+`EDFCreator.save_csv_as_edf` can convert such CSV files to EDF later. The sampling rate for 4/6/8 channel devices is 125 Hz.
+
 ```python
-path_to_csv = Path('.').joinpath('data.csv')
-path_to_edf = Path('.').joinpath('data.edf')
-sample_frequency = 125
-EDFCreator.save_csv_as_edf(path_to_csv, path_to_edf, sample_frequency)
+path_to_csv = Path('data.csv')
+path_to_edf = Path('data.edf')
+EDFCreator.save_csv_as_edf(path_to_csv, path_to_edf, sample_frequency=125)
 ```
+
+Note that the data stream is synchronized in time for `NeuroPlayDevice` using `DataSynchronizer`. If data packets are lost during transmission (e.g., due to Bluetooth issues), the SDK fills the missing values with zeros to maintain the correct timing.

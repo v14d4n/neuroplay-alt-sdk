@@ -22,7 +22,7 @@ class CSVAnnotationsWriter(AbstractCSVWriter):
         """
         :param path_to_csv_file: Path to CSV file that will be created.
         :param start_time: If 'None' then time.time() will be used.
-        :return float: Time of recording stated.
+        :return float: Time of recording started.
         """
         if start_time:
             self.__start_time = start_time
