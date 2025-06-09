@@ -18,7 +18,7 @@ class AbstractCSVWriter(ABC):
         """
         :param path_to_csv_file: Path to the csv file.
         :raises RuntimeError: If recording is already started.
-        :return float: Time of recording stated.
+        :return float: Time of recording started.
         """
         if not self._is_recording:
             self.__create_csv_file(path_to_csv_file)

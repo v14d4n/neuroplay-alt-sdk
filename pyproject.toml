@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "neuroplay-alt-sdk"
-version = "1.1.1"
-description = "NeuroPlaySDK but better."
+version = "1.1.2"
+description = "An asynchronous Python library for working with NeuroPlay EEG devices."
 authors = ["v14d4n"]
 readme = "README.md"
 packages = [

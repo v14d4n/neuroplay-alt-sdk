@@ -37,7 +37,7 @@ class AbstractNeuroPlayDevice(ABC):
         self.__data_read_characteristic: Optional[BleakGATTCharacteristic] = None
         self.__data_control_characteristic: Optional[BleakGATTCharacteristic] = None
 
-        # TODO: Добавить возможность меня количество каналов
+        # TODO: Add the ability to configure the number of channels
         self.__sampling_rate: int = 125
 
         self.__packets_list: List[bytes] = []

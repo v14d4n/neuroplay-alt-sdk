@@ -111,6 +111,7 @@ class NeuroPlayDevice(AbstractNeuroPlayDevice):
     def __reset_accumulation(self) -> None:
         self.__valid_buffer.clear()
         self.__accumulating_completed.clear()
+        self.__accumulating_event.clear()
 
     @property
     def edf_creator(self) -> EDFCreator:
