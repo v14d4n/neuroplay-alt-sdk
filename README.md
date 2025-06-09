@@ -14,8 +14,8 @@ The SDK collects data from all available channels at a fixed sampling rate of 12
 To build the package from source:
 
 ```bash
-git clone https://github.com/v14d4n/NeuroPlayAltSDK.git
-cd NeuroPlayAltSDK
+git clone https://github.com/v14d4n/neuroplay-alt-sdk.git
+cd neuroplay-alt-sdk
 poetry build
 ```
 
