@@ -8,7 +8,7 @@ This project is no longer maintained.
 
 ## Important Notes
 
-The SDK collects data from all available channels at a fixed sampling rate of 125 Hz. Selective channel reading is not supported. If you want to improve this functionality, you can modify [AbstractNeuroPlayDevice](src/neuroplay_alt_sdk/native/devices/abstract_neuroplay_device.py) class in the library source code. Contributions are welcome :)
+The SDK collects data from all available channels at a fixed sampling rate of 125 Hz. Selective channel reading is not supported. If you want to improve this functionality, you can modify [AbstractNeuroPlayDevice](src/neuroplay_alt_sdk/native/devices/abstract_neuroplay_device.py) class in the library source code.
 
 ## Building from source (with Poetry)
 To build the package from source:
