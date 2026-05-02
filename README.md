@@ -4,7 +4,7 @@ NeuroPlay Alt SDK is an asynchronous Python library for working with NeuroPlay E
 
 ## Maintenance
 
-This project is no longer actively maintained by the original author. However, it remains open source and open for community contributions via pull requests. Feel free to submit improvements or fixes.
+This project is no longer maintained.
 
 ## Important Notes
 
